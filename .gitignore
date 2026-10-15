@@ -1,0 +1,6 @@
+.env
+.venv/
+__pycache__/
+.pytest_cache/
+# your own data: projects, prompts (as edited by the agent), history, API key
+data/

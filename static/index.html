@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PM Agent</title>
+  <script>  // apply the saved theme before first paint (no flash)
+    (function () {
+      var t = localStorage.getItem("pm-theme") || "system";
+      var dark = t === "dark" || (t === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
+      document.documentElement.dataset.theme = dark ? "dark" : "light";
+    })();
+  </script>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="top">
+    <h1>Project Manager Agent</h1>
+    <nav class="tabs" role="tablist">
+      <button role="tab" data-tab="chat" class="active">Chat</button>
+      <button role="tab" data-tab="overview">Overview</button>
+      <button role="tab" data-tab="prompt">Agent prompt</button>
+      <button role="tab" data-tab="projects">Projects list</button>
+      <button role="tab" data-tab="gantt">Gantt chart</button>
+      <button role="tab" data-tab="settings">Settings</button>
+    </nav>
+  </header>
+
+  <section id="tab-chat" class="panel chat active">
+    <div class="chat-bar"><button id="reset">New chat</button></div>
+    <div id="messages"></div>
+    <form id="form">
+      <textarea id="input" rows="2" placeholder="Talk to your project manager…" autofocus></textarea>
+      <button type="submit" id="send">Send</button>
+      <button type="button" id="stop" hidden>Stop</button>
+    </form>
+  </section>
+
+  <section id="tab-overview" class="panel scroll">
+    <div class="page wide">
+      <h2>Overview</h2>
+      <p class="hint">Who is working on what. Hours left = estimate minus hours logged on unfinished work.</p>
+      <div class="table-wrap"><table id="employees"></table></div>
+      <div id="unlisted-box" hidden>
+        <h3>Assigned to projects but not in the employee list</h3>
+        <div class="table-wrap"><table id="unlisted"></table></div>
+      </div>
+      <form id="add-employee" class="row">
+        <input id="emp-name" placeholder="Name" required maxlength="80">
+        <input id="emp-position" placeholder="Position" required maxlength="100">
+        <button type="submit">Add employee</button>
+        <small id="emp-status"></small>
+      </form>
+      <h3>Organization &amp; scope</h3>
+      <p class="hint">What the organization does and what the team's work covers. Every agent reads this, and the
+        project manager can update it. Saves keep a backup.</p>
+      <textarea id="org-text" rows="12"></textarea>
+      <div class="row"><button id="save-org">Save</button><small id="org-status"></small></div>
+    </div>
+  </section>
+
+  <section id="tab-prompt" class="panel scroll">
+    <div class="page">
+      <h2>Agent prompt</h2>
+      <div class="row"><label for="agent-select">Edit prompt of:</label>
+        <select id="agent-select"><option value="">Project manager (main agent)</option></select></div>
+      <p class="hint">Agents read their prompt before every step and the project manager can edit these itself
+        (and create new subagents when you ask). Every save keeps a backup.</p>
+      <textarea id="prompt" rows="24"></textarea>
+      <div class="row">
+        <button id="save-prompt">Save prompt</button>
+        <select id="versions"><option value="">Previous versions…</option></select>
+        <small id="prompt-status"></small>
+      </div>
+    </div>
+  </section>
+
+  <section id="tab-projects" class="panel scroll">
+    <div class="page wide">
+      <h2>Projects</h2>
+      <div class="table-wrap"><table id="projects"></table></div>
+    </div>
+  </section>
+
+  <section id="tab-gantt" class="panel scroll">
+    <div class="page wide">
+      <h2>Gantt chart</h2>
+      <div id="gantt"></div>
+      <p class="hint">Time is in-game hours. Each task starts when everything it needs has finished (people are not
+        capacity-limited, so work by the same person can overlap). Darker part = hours logged. Hover a bar for details.</p>
+    </div>
+  </section>
+
+  <section id="tab-settings" class="panel scroll">
+    <div class="page">
+      <h2>Settings</h2>
+      <div class="setting">
+        <label for="theme-select">Appearance</label>
+        <select id="theme-select">
+          <option value="system">System default</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+      </div>
+      <div class="setting">
+        <label for="key-input">Anthropic API key</label>
+        <p id="key-status" class="hint"></p>
+        <form id="key-form" class="row">
+          <input id="key-input" type="password" autocomplete="new-password" spellcheck="false"
+                 placeholder="sk-ant-…" size="48">
+          <button type="submit">Save key</button>
+          <button type="button" id="key-remove" hidden>Remove saved key</button>
+        </form>
+        <p class="hint">Stored only on this machine (data/secrets.json) and sent only to Anthropic. It is checked
+          when you save it and never shown again. A saved key takes priority over ANTHROPIC_API_KEY in .env.</p>
+        <small id="key-msg"></small>
+      </div>
+      <div class="setting">
+        <label for="model-select">Model used for reasoning</label>
+        <select id="model-select"></select>
+        <p class="hint">Used by the project manager and all subagents, from their next step on. Prices are per million
+          input / output tokens. Switching models mid-chat is fine.</p>
+        <small id="model-status"></small>
+      </div>
+    </div>
+  </section>
+
+  <div id="tip" hidden></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>
